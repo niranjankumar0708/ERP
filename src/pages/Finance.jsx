@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -7,11 +7,11 @@ import Modal from '../components/common/Modal';
 import Badge from '../components/common/Badge';
 import MetricCard from '../components/ui/MetricCard';
 import InteractiveChart from '../components/ui/InteractiveChart';
-import { DollarSign, Landmark, TrendingDown, ArrowDownLeft, Plus } from 'lucide-react';
+import { DollarSign, Landmark, TrendingDown, ArrowDownLeft, Plus, Download } from 'lucide-react';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 export default function Finance() {
-  const { transactions, addTransaction } = useContext(AppContext);
+  const { transactions, addTransaction, modalTrigger, setModalTrigger } = useContext(AppContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
   
   // Form State
@@ -61,6 +61,38 @@ export default function Finance() {
     setIsModalOpen(true);
   };
 
+  useEffect(() => {
+    if (modalTrigger === 'finance' || modalTrigger === 'transaction') {
+      handleOpenModal();
+      setModalTrigger(null);
+    }
+  }, [modalTrigger, setModalTrigger]);
+
+  const handleExportCSV = () => {
+    const headers = ['Transaction ID', 'Date', 'Description', 'Category', 'Type', 'Amount (USD)'];
+    const rows = transactions.map(t => [
+      t.id,
+      t.date,
+      `"${t.description.replace(/"/g, '""')}"`,
+      t.category,
+      t.type,
+      t.amount.toFixed(2)
+    ]);
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(e => e.join(','))
+    ].join('\n');
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.setAttribute('href', url);
+    link.setAttribute('download', `NexusERP_Ledger_${new Date().toISOString().split('T')[0]}.csv`);
+    link.style.visibility = 'hidden';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const handleSave = (e) => {
     e.preventDefault();
     if (!formData.description.trim() || !formData.amount) {
@@ -105,14 +137,19 @@ export default function Finance() {
           glowColor={netBalance >= 0 ? 'var(--success)' : 'var(--danger)'}
         />
         <Card title="Ledger Bookkeeper" subtitle="Record operational corporate expenditures">
-          <Button onClick={handleOpenModal} icon={Plus} style={{ width: '100%', marginTop: '6px' }}>
-            Log Transaction
-          </Button>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px', marginTop: '6px' }}>
+            <Button onClick={handleOpenModal} icon={Plus} style={{ width: '100%' }}>
+              Log Transaction
+            </Button>
+            <Button onClick={handleExportCSV} variant="outline" icon={Download} style={{ width: '100%' }}>
+              Export CSV Ledger
+            </Button>
+          </div>
         </Card>
       </div>
 
       {/* Breakdown Grid Chart & Pie */}
-      <div className="grid-cols-3" style={{ gridTemplateColumns: '1.2fr 1.8fr', gap: '2rem' }}>
+      <div className="grid-2-col">
         <Card title="Expenditure Shares" subtitle="Category distribution of logged business expenses">
           <InteractiveChart
             type="pie"
@@ -199,7 +236,7 @@ export default function Finance() {
             required
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <div className="input-container">
               <label className="input-label">Accounting Entry Type</label>
               <select
@@ -244,7 +281,7 @@ export default function Finance() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <Input
               label="Transaction Value (USD)"
               name="amount"

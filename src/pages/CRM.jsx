@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import KanbanBoard from '../components/ui/KanbanBoard';
 import Card from '../components/common/Card';
@@ -10,8 +10,15 @@ import { DollarSign, Award, Target, FolderKanban, Plus } from 'lucide-react';
 import { formatCurrency } from '../utils/formatters';
 
 export default function CRM() {
-  const { deals, addDeal, updateDealStage } = useContext(AppContext);
+  const { deals, addDeal, updateDealStage, modalTrigger, setModalTrigger } = useContext(AppContext);
   const [isModalOpen, setIsModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (modalTrigger === 'crm' || modalTrigger === 'deal') {
+      handleOpenModal();
+      setModalTrigger(null);
+    }
+  }, [modalTrigger, setModalTrigger]);
   
   // Form State
   const [formData, setFormData] = useState({
@@ -179,7 +186,7 @@ export default function CRM() {
             required
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <Input
               label="Estimated Deal Value (USD)"
               name="value"

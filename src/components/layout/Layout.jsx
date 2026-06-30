@@ -7,6 +7,7 @@ import './layout.css';
 
 export default function Layout() {
   const [toasts, setToasts] = useState([]);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     const handleShowToast = (event) => {
@@ -40,10 +41,14 @@ export default function Layout() {
 
   return (
     <div className="app-container">
-      <Sidebar />
+      <Sidebar isOpen={sidebarOpen} onClose={() => setSidebarOpen(false)} />
+      
+      {sidebarOpen && (
+        <div className="sidebar-overlay" onClick={() => setSidebarOpen(false)} />
+      )}
       
       <main className="main-content">
-        <Header />
+        <Header onMenuClick={() => setSidebarOpen(prev => !prev)} />
         <div className="page-wrapper">
           <Outlet />
         </div>

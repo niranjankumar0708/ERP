@@ -1,10 +1,10 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { AppContext } from '../../context/AppContext';
-import { Bell, Sun, Moon, Search, Calendar, Trash2 } from 'lucide-react';
+import { Bell, Sun, Moon, Search, Calendar, Trash2, Menu } from 'lucide-react';
 import './layout.css';
 
-export default function Header() {
+export default function Header({ onMenuClick }) {
   const { theme, toggleTheme, notifications, removeNotification } = useContext(AppContext);
   const [showNotifications, setShowNotifications] = useState(false);
   const [currentTime, setCurrentTime] = useState(new Date());
@@ -34,6 +34,9 @@ export default function Header() {
   return (
     <header className="header glass-panel">
       <div className="header-left">
+        <button className="menu-toggle-btn" onClick={onMenuClick} aria-label="Toggle Menu">
+          <Menu size={20} />
+        </button>
         <h1 className="header-title">{getPageTitle()}</h1>
         <div className="header-date">
           <Calendar size={15} />

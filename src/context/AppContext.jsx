@@ -50,6 +50,7 @@ export const AppProvider = ({ children }) => {
   const [transactions, setTransactions] = useState(initialTransactions);
   const [notifications, setNotifications] = useState([]);
   const [theme, setTheme] = useState('dark');
+  const [modalTrigger, setModalTrigger] = useState(null);
 
   // Load theme preference from localStorage on mount
   useEffect(() => {
@@ -264,7 +265,9 @@ export const AppProvider = ({ children }) => {
       updateDealStage,
       addTransaction,
       addNotification,
-      removeNotification
+      removeNotification,
+      modalTrigger,
+      setModalTrigger
     }}>
       {children}
     </AppContext.Provider>

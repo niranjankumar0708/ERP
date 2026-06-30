@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -9,9 +9,11 @@ import { Plus, Search, Edit2, Trash2, Filter, PackageCheck } from 'lucide-react'
 import { formatCurrency } from '../utils/formatters';
 
 export default function Inventory() {
-  const { products, addProduct, editProduct, deleteProduct } = useContext(AppContext);
+  const { products, addProduct, editProduct, deleteProduct, modalTrigger, setModalTrigger } = useContext(AppContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All');
+  const [selectedWarehouse, setSelectedWarehouse] = useState('All');
+  const [selectedStockStatus, setSelectedStockStatus] = useState('All');
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,13 +31,29 @@ export default function Inventory() {
   });
 
   const categories = ['All', 'Electronics', 'Furniture', 'Office Supplies'];
+  const warehouses = ['All', 'Warehouse Alpha', 'Warehouse Beta'];
+  const stockStatuses = ['All', 'Low Stock', 'Healthy'];
+
+  useEffect(() => {
+    if (modalTrigger === 'inventory' || modalTrigger === 'product') {
+      handleOpenAddModal();
+      setModalTrigger(null);
+    }
+  }, [modalTrigger, setModalTrigger]);
 
   // Search & Filter
   const filteredProducts = products.filter(p => {
     const matchesSearch = p.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
                           p.sku.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesCategory = selectedCategory === 'All' || p.category === selectedCategory;
-    return matchesSearch && matchesCategory;
+    const matchesWarehouse = selectedWarehouse === 'All' || p.warehouse === selectedWarehouse;
+    
+    const isLow = p.stock <= p.minStock;
+    const matchesStockStatus = selectedStockStatus === 'All' ||
+                               (selectedStockStatus === 'Low Stock' && isLow) ||
+                               (selectedStockStatus === 'Healthy' && !isLow);
+                               
+    return matchesSearch && matchesCategory && matchesWarehouse && matchesStockStatus;
   });
 
   const handleOpenAddModal = () => {
@@ -93,20 +111,40 @@ export default function Inventory() {
         flexWrap: 'wrap',
         gap: '1rem'
       }}>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexGrow: 1, maxWidth: '600px' }}>
+        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', flexGrow: 1 }}>
           <Input
             placeholder="Search SKU or product name..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             icon={Search}
             className="search-input-erp"
+            style={{ minWidth: '200px', flexGrow: 1 }}
           />
           
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-            <Filter size={16} style={{ color: 'var(--text-muted)' }} />
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+              <Filter size={14} style={{ color: 'var(--text-muted)' }} />
+              <select
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                style={{
+                  padding: '10px 14px',
+                  background: 'var(--bg-surface)',
+                  border: '1px solid var(--border-color)',
+                  borderRadius: 'var(--radius-md)',
+                  color: 'var(--text-primary)',
+                  fontFamily: 'inherit',
+                  fontSize: '0.85rem',
+                  outline: 'none'
+                }}
+              >
+                {categories.map(c => <option key={c} value={c}>Cat: {c}</option>)}
+              </select>
+            </div>
+
             <select
-              value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              value={selectedWarehouse}
+              onChange={(e) => setSelectedWarehouse(e.target.value)}
               style={{
                 padding: '10px 14px',
                 background: 'var(--bg-surface)',
@@ -114,11 +152,28 @@ export default function Inventory() {
                 borderRadius: 'var(--radius-md)',
                 color: 'var(--text-primary)',
                 fontFamily: 'inherit',
-                fontSize: '0.9rem',
+                fontSize: '0.85rem',
                 outline: 'none'
               }}
             >
-              {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              {warehouses.map(w => <option key={w} value={w}>Loc: {w}</option>)}
+            </select>
+
+            <select
+              value={selectedStockStatus}
+              onChange={(e) => setSelectedStockStatus(e.target.value)}
+              style={{
+                padding: '10px 14px',
+                background: 'var(--bg-surface)',
+                border: '1px solid var(--border-color)',
+                borderRadius: 'var(--radius-md)',
+                color: 'var(--text-primary)',
+                fontFamily: 'inherit',
+                fontSize: '0.85rem',
+                outline: 'none'
+              }}
+            >
+              {stockStatuses.map(s => <option key={s} value={s}>Stock: {s}</option>)}
             </select>
           </div>
         </div>
@@ -256,7 +311,7 @@ export default function Inventory() {
         }
       >
         <form onSubmit={handleSave} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <Input
               label="SKU Code"
               name="sku"
@@ -291,7 +346,7 @@ export default function Inventory() {
             required
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <Input
               label="Unit Price (USD)"
               name="price"
@@ -317,7 +372,7 @@ export default function Inventory() {
             </div>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <Input
               label="Initial Stock Quantity"
               name="stock"

@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
@@ -9,13 +9,20 @@ import { Users, Search, UserPlus, Filter, Mail, Calendar, LogIn, LogOut } from '
 import { formatDate } from '../utils/formatters';
 
 export default function HR() {
-  const { employees, addEmployee, toggleEmployeeAttendance } = useContext(AppContext);
+  const { employees, addEmployee, toggleEmployeeAttendance, modalTrigger, setModalTrigger } = useContext(AppContext);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedDept, setSelectedDept] = useState('All');
   
   // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
-  
+
+  useEffect(() => {
+    if (modalTrigger === 'hr' || modalTrigger === 'employee' || modalTrigger === 'staff') {
+      handleOpenModal();
+      setModalTrigger(null);
+    }
+  }, [modalTrigger, setModalTrigger]);
+
   // Form State
   const [formData, setFormData] = useState({
     name: '',
@@ -220,7 +227,7 @@ export default function HR() {
             required
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <div className="input-container">
               <label className="input-label">Corporate Department</label>
               <select

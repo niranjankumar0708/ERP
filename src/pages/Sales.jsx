@@ -1,14 +1,15 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { AppContext } from '../context/AppContext';
 import Card from '../components/common/Card';
 import Button from '../components/common/Button';
 import Input from '../components/common/Input';
 import Badge from '../components/common/Badge';
-import { ShoppingBag, Plus, Trash2, Check, ArrowRight, XCircle } from 'lucide-react';
+import Modal from '../components/common/Modal';
+import { ShoppingBag, Plus, Trash2, Check, ArrowRight, XCircle, FileText, Printer } from 'lucide-react';
 import { formatCurrency, formatDate } from '../utils/formatters';
 
 export default function Sales() {
-  const { products, orders, createOrder, updateOrderStatus } = useContext(AppContext);
+  const { products, orders, createOrder, updateOrderStatus, modalTrigger, setModalTrigger } = useContext(AppContext);
   
   // POS Cart State
   const [cart, setCart] = useState([]);
@@ -16,6 +17,25 @@ export default function Sales() {
   const [qty, setQty] = useState(1);
   const [customerName, setCustomerName] = useState('');
   const [paymentMethod, setPaymentMethod] = useState('Credit Card');
+
+  // Invoice Modal State
+  const [selectedInvoice, setSelectedInvoice] = useState(null);
+  const [isInvoiceModalOpen, setIsInvoiceModalOpen] = useState(false);
+
+  useEffect(() => {
+    if (modalTrigger === 'sales' || modalTrigger === 'pos') {
+      const checkoutEl = document.querySelector('.pos-terminal-card');
+      if (checkoutEl) {
+        checkoutEl.scrollIntoView({ behavior: 'smooth' });
+        // Add a temporary glow effect or focus
+        checkoutEl.style.boxShadow = '0 0 25px rgba(59, 130, 246, 0.6)';
+        setTimeout(() => {
+          checkoutEl.style.boxShadow = '';
+        }, 2000);
+      }
+      setModalTrigger(null);
+    }
+  }, [modalTrigger, setModalTrigger]);
 
   // Find active product detail
   const activeProduct = products.find(p => p.id === selectedProductId);
@@ -95,10 +115,10 @@ export default function Sales() {
   };
 
   return (
-    <div className="animate-fade-in grid-cols-3" style={{ gridTemplateColumns: '1.2fr 1.8fr', gap: '2rem', alignItems: 'flex-start' }}>
+    <div className="animate-fade-in grid-2-col" style={{ alignItems: 'flex-start' }}>
       
       {/* POS Cart Panel */}
-      <Card title="POS Terminal & Checkout" subtitle="Register instant customer sales invoices and sync stock levels">
+      <Card title="POS Terminal & Checkout" subtitle="Register instant customer sales invoices and sync stock levels" className="pos-terminal-card">
         <form onSubmit={handleCheckout} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
           
           <div className="input-container">
@@ -119,7 +139,7 @@ export default function Sales() {
           </div>
 
           {activeProduct && (
-            <div style={{ display: 'grid', gridTemplateColumns: '1.5fr 1fr', gap: '1rem', alignItems: 'flex-end' }}>
+            <div className="form-grid" style={{ alignItems: 'flex-end' }}>
               <Input
                 label="Quantity"
                 type="number"
@@ -271,46 +291,144 @@ export default function Sales() {
                   </div>
                 </div>
 
-                {/* Status action buttons */}
-                {ord.status !== 'Fulfilled' && ord.status !== 'Cancelled' && (
-                  <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
-                    {ord.status === 'Pending' && (
+                {/* Status and invoice action buttons */}
+                <div style={{ display: 'flex', justifyContent: 'flex-end', flexWrap: 'wrap', gap: '8px', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    onClick={() => {
+                      setSelectedInvoice(ord);
+                      setIsInvoiceModalOpen(true);
+                    }}
+                    icon={FileText}
+                  >
+                    View Invoice
+                  </Button>
+
+                  {ord.status !== 'Fulfilled' && ord.status !== 'Cancelled' && (
+                    <>
+                      {ord.status === 'Pending' && (
+                        <Button 
+                          variant="outline" 
+                          size="sm" 
+                          onClick={() => updateOrderStatus(ord.id, 'Shipped')}
+                          icon={ArrowRight}
+                        >
+                          Ship Order
+                        </Button>
+                      )}
+                      {ord.status === 'Shipped' && (
+                        <Button 
+                          variant="primary" 
+                          size="sm" 
+                          onClick={() => updateOrderStatus(ord.id, 'Fulfilled')}
+                          icon={Check}
+                          style={{ background: 'var(--success)' }}
+                        >
+                          Fulfill (Collect Payout)
+                        </Button>
+                      )}
                       <Button 
-                        variant="outline" 
+                        variant="ghost" 
                         size="sm" 
-                        onClick={() => updateOrderStatus(ord.id, 'Shipped')}
-                        icon={ArrowRight}
+                        onClick={() => updateOrderStatus(ord.id, 'Cancelled')}
+                        icon={XCircle}
+                        className="text-danger"
                       >
-                        Ship Order
+                        Cancel
                       </Button>
-                    )}
-                    {ord.status === 'Shipped' && (
-                      <Button 
-                        variant="primary" 
-                        size="sm" 
-                        onClick={() => updateOrderStatus(ord.id, 'Fulfilled')}
-                        icon={Check}
-                        style={{ background: 'var(--success)' }}
-                      >
-                        Fulfill (Collect Payout)
-                      </Button>
-                    )}
-                    <Button 
-                      variant="ghost" 
-                      size="sm" 
-                      onClick={() => updateOrderStatus(ord.id, 'Cancelled')}
-                      icon={XCircle}
-                      className="text-danger"
-                    >
-                      Cancel
-                    </Button>
-                  </div>
-                )}
+                    </>
+                  )}
+                </div>
               </div>
             ))
           )}
         </div>
       </Card>
+
+      {/* Invoice Receipt Modal */}
+      <Modal
+        isOpen={isInvoiceModalOpen}
+        onClose={() => setIsInvoiceModalOpen(false)}
+        title="Tax Invoice / Receipt"
+        footer={
+          <div className="modal-overlay-actions" style={{ display: 'flex', gap: '10px', width: '100%', justifyContent: 'flex-end' }}>
+            <Button variant="outline" onClick={() => setIsInvoiceModalOpen(false)} className="no-print">Close</Button>
+            <Button onClick={() => window.print()} icon={Printer} className="no-print">Print Invoice</Button>
+          </div>
+        }
+      >
+        {selectedInvoice && (
+          <div className="printable-invoice" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', color: 'var(--text-primary)' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '1px solid var(--border-color)', paddingBottom: '1rem' }}>
+              <div>
+                <h2 style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--primary)' }}>Nexus<span style={{ color: 'var(--primary)' }}>ERP</span></h2>
+                <p style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Corporate Accounting System</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <h3 style={{ fontSize: '1.1rem', fontWeight: 700 }}>INVOICE</h3>
+                <span style={{ fontSize: '0.85rem', fontFamily: 'monospace', fontWeight: 700, color: 'var(--primary)' }}>{selectedInvoice.id}</span>
+              </div>
+            </div>
+
+            <div className="form-grid" style={{ fontSize: '0.85rem' }}>
+              <div>
+                <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Billed To:</h4>
+                <p style={{ fontWeight: 700 }}>{selectedInvoice.customer}</p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Client Partner Account</p>
+              </div>
+              <div style={{ textAlign: 'right' }}>
+                <h4 style={{ fontSize: '0.8rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '4px' }}>Invoice Details:</h4>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Date: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{formatDate(selectedInvoice.date)}</span></p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Payment: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedInvoice.paymentMethod}</span></p>
+                <p style={{ color: 'var(--text-secondary)', fontSize: '0.8rem' }}>Status: <span style={{ fontWeight: 600, color: 'var(--text-primary)' }}>{selectedInvoice.status}</span></p>
+              </div>
+            </div>
+
+            <div style={{ marginTop: '0.5rem' }}>
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.85rem', textAlign: 'left' }}>
+                <thead>
+                  <tr style={{ borderBottom: '2px solid var(--border-color)', color: 'var(--text-secondary)', fontWeight: 600 }}>
+                    <th style={{ padding: '8px 0' }}>Item Description</th>
+                    <th style={{ padding: '8px 0', textAlign: 'center' }}>Qty</th>
+                    <th style={{ padding: '8px 0', textAlign: 'right' }}>Unit Price</th>
+                    <th style={{ padding: '8px 0', textAlign: 'right' }}>Total</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {selectedInvoice.items.map((item, idx) => (
+                    <tr key={idx} style={{ borderBottom: '1px solid var(--border-color)' }}>
+                      <td style={{ padding: '10px 0', fontWeight: 600 }}>{item.name}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'center' }}>{item.qty}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right' }}>{formatCurrency(item.price)}</td>
+                      <td style={{ padding: '10px 0', textAlign: 'right', fontWeight: 700 }}>{formatCurrency(item.price * item.qty)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '6px', fontSize: '0.85rem', width: '220px', alignSelf: 'flex-end', borderTop: '1px solid var(--border-color)', paddingTop: '10px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Subtotal:</span>
+                <span>{formatCurrency(selectedInvoice.total / 1.08)}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', color: 'var(--text-secondary)' }}>
+                <span>Sales Tax (8%):</span>
+                <span>{formatCurrency(selectedInvoice.total - (selectedInvoice.total / 1.08))}</span>
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 800, fontSize: '1rem', borderTop: '1px dashed var(--border-color)', paddingTop: '6px', marginTop: '4px' }}>
+                <span>Grand Total:</span>
+                <span style={{ color: 'var(--primary)' }}>{formatCurrency(selectedInvoice.total)}</span>
+              </div>
+            </div>
+
+            <div style={{ textAlign: 'center', color: 'var(--text-muted)', fontSize: '0.75rem', marginTop: '1.5rem', borderTop: '1px solid var(--border-color)', paddingTop: '1rem' }}>
+              Thank you for your business. For billing disputes, contact accounting@nexuserp.com.
+            </div>
+          </div>
+        )}
+      </Modal>
     </div>
   );
 }

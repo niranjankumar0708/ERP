@@ -62,7 +62,7 @@ export default function Settings() {
             required
           />
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+          <div className="form-grid">
             <div className="input-container">
               <label className="input-label">Accounting Currency</label>
               <select

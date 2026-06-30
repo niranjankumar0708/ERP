@@ -9,11 +9,12 @@ import {
   KanbanSquare, 
   DollarSign, 
   Settings as SettingsIcon,
-  Hexagon
+  Hexagon,
+  X
 } from 'lucide-react';
 import './layout.css';
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen, onClose }) {
   const { theme } = useContext(AppContext);
 
   const navItems = [
@@ -27,7 +28,11 @@ export default function Sidebar() {
   ];
 
   return (
-    <aside className="sidebar glass-panel">
+    <aside className={`sidebar glass-panel ${isOpen ? 'open' : ''}`}>
+      <button className="sidebar-close-btn" onClick={onClose} aria-label="Close Sidebar">
+        <X size={20} />
+      </button>
+
       <div className="sidebar-brand">
         <Hexagon className="brand-icon" size={28} />
         <span className="brand-text">Nexus<span>ERP</span></span>
@@ -40,6 +45,11 @@ export default function Sidebar() {
             <NavLink 
               key={item.path} 
               to={item.path}
+              onClick={() => {
+                if (window.innerWidth <= 1024) {
+                  onClose();
+                }
+              }}
               className={({ isActive }) => `sidebar-link ${isActive ? 'active' : ''}`}
             >
               <Icon size={20} className="link-icon" />

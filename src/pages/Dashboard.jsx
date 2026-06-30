@@ -4,6 +4,7 @@ import MetricCard from '../components/ui/MetricCard';
 import InteractiveChart from '../components/ui/InteractiveChart';
 import Card from '../components/common/Card';
 import Badge from '../components/common/Badge';
+import QuickActionsFAB from '../components/ui/QuickActionsFAB';
 import { 
   DollarSign, 
   Package, 
@@ -122,7 +123,7 @@ export default function Dashboard() {
       </div>
 
       {/* Primary Analytics Charts Section */}
-      <div className="grid-cols-3" style={{ gridTemplateColumns: '2fr 1fr', gap: '2rem' }}>
+      <div className="grid-dashboard">
         <Card title="Sales & Net Profits Trend" subtitle="Consolidated monthly sales vs estimated net profit margins">
           <InteractiveChart
             type="area"
@@ -215,6 +216,7 @@ export default function Dashboard() {
           </div>
         </Card>
       </div>
+      <QuickActionsFAB />
     </div>
   );
 }
