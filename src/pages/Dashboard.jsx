@@ -55,35 +55,17 @@ export default function Dashboard() {
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
       
       {/* Welcome Banner Card */}
-      <div className="glass-panel" style={{
-        padding: '2.5rem 2rem',
-        borderRadius: 'var(--radius-lg)',
-        background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.12) 0%, rgba(139, 92, 246, 0.12) 100%)',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        overflow: 'hidden',
-        position: 'relative',
-        border: '1px solid var(--border-color)'
-      }}>
-        <div style={{ zIndex: 1, maxWidth: '65%' }}>
-          <h2 style={{ fontSize: '1.85rem', fontWeight: 800, marginBottom: '8px', letterSpacing: '-0.02em' }}>Welcome Back, Alex Director</h2>
-          <p style={{ fontSize: '0.95rem', color: 'var(--text-secondary)', lineHeight: 1.5 }}>
+      <div className="glass-panel welcome-banner">
+        <div className="welcome-banner-text">
+          <h2 className="welcome-banner-title">Welcome Back, Alex Director</h2>
+          <p className="welcome-banner-desc">
             NexusERP analytics engine is active. There are {lowStockCount} warehouse items requiring inventory stock adjustments, and {checkedInCount} active staff members checked in for today's shift.
           </p>
         </div>
         <img 
           src="/images/dashboard_banner.png" 
           alt="Analytics Illustration" 
-          style={{
-            position: 'absolute',
-            right: '-10px',
-            top: '50%',
-            transform: 'translateY(-50%)',
-            height: '140%',
-            opacity: 0.85,
-            pointerEvents: 'none'
-          }}
+          className="welcome-banner-img"
         />
       </div>
 
@@ -156,15 +138,7 @@ export default function Dashboard() {
               </div>
             ) : (
               products.filter(p => p.stock <= p.minStock).map((prod) => (
-                <div key={prod.id} style={{
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  padding: '0.85rem 1rem',
-                  border: '1px solid rgba(239, 68, 68, 0.15)',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'rgba(239, 68, 68, 0.03)'
-                }}>
+                <div key={prod.id} className="dashboard-alert-item">
                   <div>
                     <h4 style={{ fontSize: '0.9rem', fontWeight: 700 }}>{prod.name}</h4>
                     <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>SKU: {prod.sku} | Location: {prod.warehouse}</span>
@@ -189,15 +163,7 @@ export default function Dashboard() {
               </div>
             ) : (
               notifications.slice(0, 4).map((notif) => (
-                <div key={notif.id} style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'space-between',
-                  padding: '0.75rem 1rem',
-                  border: '1px solid var(--border-color)',
-                  borderRadius: 'var(--radius-md)',
-                  background: 'rgba(255,255,255,0.01)'
-                }}>
+                <div key={notif.id} className="dashboard-log-item">
                   <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                     <div style={{
                       width: '6px',

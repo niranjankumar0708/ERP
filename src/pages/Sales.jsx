@@ -260,7 +260,7 @@ export default function Sales() {
                   gap: '0.85rem'
                 }}
               >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                <div className="order-card-header">
                   <div>
                     <span style={{ fontFamily: 'monospace', fontWeight: 700, color: 'var(--primary)' }}>{ord.id}</span>
                     <h4 style={{ fontSize: '0.95rem', fontWeight: 700, margin: '2px 0' }}>{ord.customer}</h4>

@@ -89,15 +89,8 @@ export default function HR() {
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       {/* Search & Filter Header Bar */}
-      <div className="glass-panel" style={{
-        padding: '1.25rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexGrow: 1, maxWidth: '600px' }}>
+      <div className="glass-panel control-bar">
+        <div className="control-bar-left" style={{ maxWidth: '600px' }}>
           <Input
             placeholder="Search employee names, titles..."
             value={searchTerm}
@@ -106,7 +99,8 @@ export default function HR() {
             className="search-input-erp"
           />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+          <div className="control-bar-filters">
+            <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             <Filter size={16} style={{ color: 'var(--text-muted)' }} />
             <select
               value={selectedDept}
@@ -126,11 +120,12 @@ export default function HR() {
             </select>
           </div>
         </div>
-
-        <Button onClick={handleOpenModal} icon={UserPlus}>
-          Onboard Staff
-        </Button>
       </div>
+
+      <Button onClick={handleOpenModal} icon={UserPlus}>
+        Onboard Staff
+      </Button>
+    </div>
 
       {/* Grid listing employees */}
       <div className="grid-cols-3">

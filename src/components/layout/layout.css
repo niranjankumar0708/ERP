@@ -151,6 +151,12 @@
   z-index: 90;
 }
 
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
 .header-title {
   font-size: 1.35rem;
   font-weight: 700;
@@ -419,5 +425,20 @@
   }
   .header {
     padding: 0 16px;
+  }
+}
+
+@media (max-width: 768px) {
+  .header-date {
+    display: none !important;
+  }
+  .header-username {
+    display: none !important;
+  }
+  .header-user {
+    padding-left: 0;
+  }
+  .header-title {
+    font-size: 1.1rem;
   }
 }

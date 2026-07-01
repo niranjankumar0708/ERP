@@ -103,15 +103,8 @@ export default function Inventory() {
     <div className="animate-fade-in" style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
       
       {/* Control Bar */}
-      <div className="glass-panel" style={{
-        padding: '1.25rem 2rem',
-        display: 'flex',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        flexWrap: 'wrap',
-        gap: '1rem'
-      }}>
-        <div style={{ display: 'flex', gap: '1rem', alignItems: 'center', flexWrap: 'wrap', flexGrow: 1 }}>
+      <div className="glass-panel control-bar">
+        <div className="control-bar-left">
           <Input
             placeholder="Search SKU or product name..."
             value={searchTerm}
@@ -121,7 +114,7 @@ export default function Inventory() {
             style={{ minWidth: '200px', flexGrow: 1 }}
           />
           
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', alignItems: 'center' }}>
+          <div className="control-bar-filters">
             <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
               <Filter size={14} style={{ color: 'var(--text-muted)' }} />
               <select
